@@ -1,10 +1,7 @@
-import Interface
-import tkinter as tk
+from Config import config  # import z podfolderu configuration
 
-okno = tk.Tk()
-okno.title("Aplikacja – Zarządzanie danymi")
-okno.geometry("800x800")
-okno.configure(bg="#f0f0f5")
+# Tworzymy okno i interfejs
+okno = config.create_app()
 
-Interface.pokaz_glowny_ekran(okno)
+# Uruchamiamy aplikację
 okno.mainloop()

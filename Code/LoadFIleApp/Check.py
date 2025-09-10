@@ -7,9 +7,7 @@ from Utills.ProgramState import ProgramStates
 def sprawdz(wynik_label):
     """
     Funkcja wykonująca predykcję liter z załadowanego obrazu przy użyciu perceptronu.
-    
-    Arguments:
-        wynik_label (tk.Label): Label w GUI, w którym wyświetlany będzie wynik.
+    Wynik jest prezentowany w formie tabelki tekstowej w Labelu.
     """
     if ProgramStates.perceptron.w is None:
         wynik_label.config(text="Brak wczytanego modelu")
@@ -20,41 +18,40 @@ def sprawdz(wynik_label):
         return
 
     try:
-        # Pobranie obrazu w formie numpy
+        # Pobranie obrazu
         img_np = ProgramStates.ImageLoaderObject.getImage()
         letters = WordImageLoader.extract_letters(cv2.cvtColor(img_np, cv2.COLOR_GRAY2BGR))
         print(f"Znaleziono {len(letters)} liter")
 
-        letters_row = "Litery:    "
-        probs_row = "Pewności: "
+        litery = []
+        prawdop = []
 
         for i, l in enumerate(letters):
-            # Normalizacja i spłaszczenie wektora wejściowego
             x = l / 255.0
             x = x.flatten()
-            x = np.append(x, 1)  # dodanie biasu
+            x = np.append(x, 1)
 
-            # Predykcja perceptronu
             wyniky = ProgramStates.perceptron.predict(x)
             index = np.argmax(wyniky)
             maxWartosc = wyniky[index]
 
-            # Konwersja indeksu na literę
             predicted_char = Loader.index_to_letter(index)
 
-            # Dodanie do wierszy
-            letters_row += f"{predicted_char}\t"
-            probs_row += f"{maxWartosc:.2f}\t"
+            litery.append(predicted_char)
+            prawdop.append(f"{maxWartosc:.2f}")
 
-            # Opcjonalnie: wydruk w konsoli
             print(f"Litera {i}: {predicted_char} ({maxWartosc:.2f})")
             print("Wyniki predykcji:", wyniky)
 
-        # Złożenie tekstu w dwie linie
-        tekst_wynik = f"{letters_row.strip()}\n{probs_row.strip()}"
+        # ustalamy szerokość kolumn
+        col_width = 8
+        letters_row = "Litery:    " + "".join(l.ljust(col_width) for l in litery)
+        probs_row   = "Prawdop.: " + "".join(p.ljust(col_width) for p in prawdop)
 
-        # Aktualizacja label w GUI
-        wynik_label.config(text=tekst_wynik)
+        tekst_wynik = f"{letters_row}\n{probs_row}"
+
+        # Label z monospace (Courier), żeby się nie rozjeżdżało
+        wynik_label.config(text=tekst_wynik, font=("Courier", 14), justify="left")
 
     except Exception as e:
         wynik_label.config(text=f"Błąd podczas predykcji: {e}")
